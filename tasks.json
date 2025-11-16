@@ -34,7 +34,18 @@
       }
     }
   ],
-  "outbox": [],
+  "outbox": [
+    {
+      "from": "local",
+      "ts": 1731731100,
+      "type": "status",
+      "id": "s_local_001",
+      "data": {
+        "msg": "Local Claude monitoring. Created test entry. Waiting for Cloud Claude to process inbox tasks.",
+        "state": "⏳"
+      }
+    }
+  ],
   "completed": [],
-  "last_sync": 1731730500
+  "last_sync": 1731731100
 }
