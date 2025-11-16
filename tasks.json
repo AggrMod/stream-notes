@@ -1,0 +1,40 @@
+{
+  "inbox": [
+    {
+      "from": "local",
+      "ts": 1731730500,
+      "type": "task",
+      "id": "t_001",
+      "data": {
+        "action": "discuss_protocol",
+        "desc": "Review COMMUNICATION_PROTOCOL.md and propose optimizations",
+        "priority": "high"
+      }
+    },
+    {
+      "from": "local",
+      "ts": 1731730501,
+      "type": "task",
+      "id": "t_002",
+      "data": {
+        "action": "implement_comm",
+        "desc": "Create comm.js to handle task queue",
+        "priority": "high"
+      }
+    },
+    {
+      "from": "local",
+      "ts": 1731730502,
+      "type": "task",
+      "id": "t_003",
+      "data": {
+        "action": "add_ui",
+        "desc": "Add task panel to index.html for monitoring",
+        "priority": "medium"
+      }
+    }
+  ],
+  "outbox": [],
+  "completed": [],
+  "last_sync": 1731730500
+}
