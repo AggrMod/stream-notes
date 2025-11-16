@@ -1,7 +1,10 @@
 // Minimal journal MVP using localStorage
 const STORAGE_KEY = 'journal_entries_v1'
+const DARK_MODE_KEY = 'journal_dark_mode'
 let entries = []
 let currentId = null
+let autoSaveTimeout = null
+let hasUnsavedChanges = false
 
 // DOM
 const entriesList = document.getElementById('entriesList')
@@ -18,6 +21,17 @@ const btnSync = document.getElementById('btnSync')
 const btnPull = document.getElementById('btnPull')
 const fileInput = document.getElementById('fileInput')
 const search = document.getElementById('search')
+const btnDarkMode = document.getElementById('btnDarkMode')
+const unsavedIndicator = document.getElementById('unsavedIndicator')
+const autoSaveIndicator = document.getElementById('autoSaveIndicator')
+const wordCount = document.getElementById('wordCount')
+// Markdown toolbar buttons
+const btnBold = document.getElementById('btnBold')
+const btnItalic = document.getElementById('btnItalic')
+const btnHeading = document.getElementById('btnHeading')
+const btnLink = document.getElementById('btnLink')
+const btnCode = document.getElementById('btnCode')
+const btnList = document.getElementById('btnList')
 
 function load() {
   try {
@@ -61,6 +75,51 @@ function renderPreview() {
   preview.innerHTML = marked.parse(md)
 }
 
+function updateWordCount() {
+  const text = editor.value || ''
+  const chars = text.length
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0
+  wordCount.textContent = `${words} words · ${chars} chars`
+}
+
+function markUnsaved() {
+  hasUnsavedChanges = true
+  unsavedIndicator.classList.remove('hidden')
+  autoSaveIndicator.classList.add('hidden')
+
+  // Clear any existing auto-save timeout
+  if (autoSaveTimeout) clearTimeout(autoSaveTimeout)
+
+  // Set new auto-save timeout (2 seconds after last change)
+  autoSaveTimeout = setTimeout(() => {
+    if (hasUnsavedChanges && currentId) {
+      autoSaveEntry()
+    }
+  }, 2000)
+}
+
+function markSaved() {
+  hasUnsavedChanges = false
+  unsavedIndicator.classList.add('hidden')
+  autoSaveIndicator.classList.remove('hidden')
+  setTimeout(() => {
+    autoSaveIndicator.classList.add('hidden')
+  }, 2000)
+}
+
+function autoSaveEntry() {
+  if (!currentId) return
+  const e = entries.find(x=>x.id===currentId)
+  if (!e) return
+  e.title = titleEl.value
+  e.content = editor.value
+  e.updatedAt = Date.now()
+  saveAll()
+  renderList(search.value)
+  meta.textContent = `Last updated: ${new Date(e.updatedAt).toLocaleString()}`
+  markSaved()
+}
+
 function newEntry() {
   const id = 'id_' + Date.now()
   const now = Date.now()
@@ -95,6 +154,7 @@ function saveEntry(){
   saveAll()
   renderList(search.value)
   meta.textContent = `Last updated: ${new Date(e.updatedAt).toLocaleString()}`
+  markSaved()
 }
 
 function deleteEntry(){
@@ -149,9 +209,61 @@ function importEntries(file){
   reader.readAsText(file)
 }
 
+// Dark mode toggle
+function toggleDarkMode() {
+  document.documentElement.classList.toggle('dark')
+  const isDark = document.documentElement.classList.contains('dark')
+  localStorage.setItem(DARK_MODE_KEY, isDark ? 'true' : 'false')
+  btnDarkMode.textContent = isDark ? '☀️' : '🌙'
+}
+
+function loadDarkMode() {
+  const isDark = localStorage.getItem(DARK_MODE_KEY) === 'true'
+  if (isDark) {
+    document.documentElement.classList.add('dark')
+    btnDarkMode.textContent = '☀️'
+  } else {
+    btnDarkMode.textContent = '🌙'
+  }
+}
+
+// Markdown toolbar helpers
+function wrapSelection(before, after = before) {
+  const start = editor.selectionStart
+  const end = editor.selectionEnd
+  const text = editor.value
+  const selectedText = text.substring(start, end)
+  const replacement = before + selectedText + after
+  editor.value = text.substring(0, start) + replacement + text.substring(end)
+  editor.selectionStart = start + before.length
+  editor.selectionEnd = end + before.length
+  editor.focus()
+  markUnsaved()
+  renderPreview()
+  updateWordCount()
+}
+
+function insertAtCursor(text) {
+  const start = editor.selectionStart
+  const end = editor.selectionEnd
+  const current = editor.value
+  editor.value = current.substring(0, start) + text + current.substring(end)
+  editor.selectionStart = editor.selectionEnd = start + text.length
+  editor.focus()
+  markUnsaved()
+  renderPreview()
+  updateWordCount()
+}
+
 // events
 editor.addEventListener('input', ()=>{
   renderPreview()
+  updateWordCount()
+  markUnsaved()
+})
+
+titleEl.addEventListener('input', ()=>{
+  markUnsaved()
 })
 
 btnSave.addEventListener('click', ()=> saveEntry())
@@ -210,14 +322,77 @@ async function pullFromServer(){
 btnSync.addEventListener('click', ()=> syncToServer())
 btnPull.addEventListener('click', ()=> pullFromServer())
 
+// Dark mode
+btnDarkMode.addEventListener('click', ()=> toggleDarkMode())
+
+// Markdown toolbar
+btnBold.addEventListener('click', ()=> wrapSelection('**'))
+btnItalic.addEventListener('click', ()=> wrapSelection('*'))
+btnHeading.addEventListener('click', ()=> {
+  const start = editor.selectionStart
+  const text = editor.value
+  // Find start of line
+  let lineStart = start
+  while (lineStart > 0 && text[lineStart - 1] !== '\n') lineStart--
+
+  editor.selectionStart = lineStart
+  editor.selectionEnd = lineStart
+  insertAtCursor('# ')
+})
+btnLink.addEventListener('click', ()=> wrapSelection('[', '](url)'))
+btnCode.addEventListener('click', ()=> wrapSelection('`'))
+btnList.addEventListener('click', ()=> {
+  const start = editor.selectionStart
+  const text = editor.value
+  let lineStart = start
+  while (lineStart > 0 && text[lineStart - 1] !== '\n') lineStart--
+
+  editor.selectionStart = lineStart
+  editor.selectionEnd = lineStart
+  insertAtCursor('- ')
+})
+
+// Keyboard shortcuts
+document.addEventListener('keydown', (e)=>{
+  // Ctrl+S or Cmd+S - Save
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault()
+    saveEntry()
+  }
+  // Ctrl+N or Cmd+N - New entry
+  if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
+    e.preventDefault()
+    newEntry()
+  }
+  // Ctrl+F or Cmd+F - Focus search
+  if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+    e.preventDefault()
+    search.focus()
+    search.select()
+  }
+  // Ctrl+B or Cmd+B - Bold (only in editor)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'b' && document.activeElement === editor) {
+    e.preventDefault()
+    wrapSelection('**')
+  }
+  // Ctrl+I or Cmd+I - Italic (only in editor)
+  if ((e.ctrlKey || e.metaKey) && e.key === 'i' && document.activeElement === editor) {
+    e.preventDefault()
+    wrapSelection('*')
+  }
+})
+
 // init
 load()
+loadDarkMode()
 renderList()
 // auto-load most recent entry if present
 if (entries.length) {
   entries.sort((a,b)=> b.updatedAt - a.updatedAt)
   loadEntry(entries[0].id)
+  updateWordCount()
 } else {
   // start with a fresh entry
   newEntry()
+  updateWordCount()
 }

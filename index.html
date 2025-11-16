@@ -6,24 +6,30 @@
   <title>Journal MVP</title>
   <!-- Tailwind CDN for quick styling -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class'
+    }
+  </script>
   <!-- Marked for Markdown parsing -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-900 h-screen">
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 h-screen transition-colors">
   <div class="h-full flex">
     <!-- Sidebar -->
-    <aside class="w-80 bg-white border-r p-4 flex flex-col">
+    <aside class="w-80 bg-white dark:bg-gray-800 border-r dark:border-gray-700 p-4 flex flex-col">
       <div class="flex items-center justify-between mb-4">
-        <h1 class="text-lg font-semibold">Journal</h1>
-        <div class="space-x-2">
-          <button id="btnExport" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Export</button>
-          <button id="btnImport" class="px-2 py-1 bg-green-500 text-white rounded text-sm">Import</button>
-          <button id="btnSync" class="px-2 py-1 bg-teal-600 text-white rounded text-sm">Sync → Server</button>
-          <button id="btnPull" class="px-2 py-1 bg-gray-600 text-white rounded text-sm">Pull ← Server</button>
-        </div>
+        <h1 class="text-lg font-semibold dark:text-white">Journal</h1>
+        <button id="btnDarkMode" class="px-2 py-1 bg-gray-700 dark:bg-gray-600 text-white rounded text-sm" title="Toggle Dark Mode">🌙</button>
+      </div>
+      <div class="mb-2 flex gap-2 flex-wrap">
+        <button id="btnExport" class="px-2 py-1 bg-blue-500 text-white rounded text-xs">Export</button>
+        <button id="btnImport" class="px-2 py-1 bg-green-500 text-white rounded text-xs">Import</button>
+        <button id="btnSync" class="px-2 py-1 bg-teal-600 text-white rounded text-xs">Sync →</button>
+        <button id="btnPull" class="px-2 py-1 bg-gray-600 text-white rounded text-xs">← Pull</button>
       </div>
       <div class="mb-4">
-        <input id="search" type="search" placeholder="Search..." class="w-full px-3 py-2 border rounded" />
+        <input id="search" type="search" placeholder="Search... (Ctrl+F)" class="w-full px-3 py-2 border dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
       </div>
       <div class="flex-1 overflow-auto" id="entriesList"></div>
       <div class="mt-4">
@@ -32,28 +38,43 @@
     </aside>
 
     <!-- Editor area -->
-    <main class="flex-1 p-6 flex flex-col">
+    <main class="flex-1 p-6 flex flex-col dark:bg-gray-900">
       <div class="flex items-center justify-between mb-3">
         <div>
-          <input id="title" placeholder="Untitled" class="text-2xl font-semibold w-96 bg-transparent border-b pb-1" />
-          <div class="text-sm text-gray-500" id="meta"></div>
+          <div class="flex items-center gap-2">
+            <input id="title" placeholder="Untitled" class="text-2xl font-semibold w-96 bg-transparent dark:text-white border-b dark:border-gray-700 pb-1" />
+            <span id="unsavedIndicator" class="text-orange-500 text-sm hidden">● Unsaved</span>
+            <span id="autoSaveIndicator" class="text-green-500 text-sm hidden">✓ Saved</span>
+          </div>
+          <div class="text-sm text-gray-500 dark:text-gray-400" id="meta"></div>
         </div>
         <div class="space-x-2">
-          <button id="btnSave" class="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
-          <button id="btnDelete" class="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
+          <button id="btnSave" class="px-3 py-1 bg-blue-600 text-white rounded" title="Save (Ctrl+S)">💾 Save</button>
+          <button id="btnDelete" class="px-3 py-1 bg-red-600 text-white rounded">🗑️ Delete</button>
         </div>
+      </div>
+
+      <!-- Markdown Toolbar -->
+      <div class="mb-2 flex gap-1 items-center flex-wrap">
+        <button id="btnBold" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 dark:text-white rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" title="Bold">**B**</button>
+        <button id="btnItalic" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 dark:text-white rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" title="Italic">*I*</button>
+        <button id="btnHeading" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 dark:text-white rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" title="Heading"># H</button>
+        <button id="btnLink" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 dark:text-white rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" title="Link">🔗</button>
+        <button id="btnCode" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 dark:text-white rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" title="Code">`Code`</button>
+        <button id="btnList" class="px-2 py-1 bg-gray-200 dark:bg-gray-700 dark:text-white rounded text-sm hover:bg-gray-300 dark:hover:bg-gray-600" title="List">• List</button>
+        <span class="ml-auto text-sm text-gray-500 dark:text-gray-400" id="wordCount">0 words · 0 chars</span>
       </div>
 
       <div class="flex-1 flex gap-4">
         <div class="w-1/2 h-full">
-          <textarea id="editor" class="w-full h-full border rounded p-3 font-mono" placeholder="# Write your journal entry in Markdown"></textarea>
+          <textarea id="editor" class="w-full h-full border dark:border-gray-700 rounded p-3 font-mono dark:bg-gray-800 dark:text-white" placeholder="# Write your journal entry in Markdown"></textarea>
         </div>
-        <div class="w-1/2 h-full bg-white border rounded p-4 overflow-auto">
-          <div id="preview" class="prose max-w-none"></div>
+        <div class="w-1/2 h-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded p-4 overflow-auto">
+          <div id="preview" class="prose dark:prose-invert max-w-none"></div>
         </div>
       </div>
 
-      <div class="mt-4 text-sm text-gray-600">Tip: Use Markdown. Live preview updates as you type.</div>
+      <div class="mt-4 text-sm text-gray-600 dark:text-gray-400">💡 Auto-save enabled · Use Markdown · Ctrl+S to save · Ctrl+N for new entry</div>
     </main>
   </div>
 
