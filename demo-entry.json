@@ -1,0 +1,9 @@
+[
+  {
+    "id": "demo_sync_test_001",
+    "title": "Testing Stream Notes Sync System",
+    "content": "# Sync Test Entry\n\nThis entry was created by Claude to test the sync system between local and cloud environments.\n\n## What I'm Testing:\n- Git pull/push workflow\n- Branch synchronization\n- Real-time updates between sessions\n\n## Current Features:\n- ✅ Auto-save (2 second debounce)\n- ✅ Dark mode toggle\n- ✅ Word/character count\n- ✅ Markdown toolbar\n- ✅ Keyboard shortcuts\n- ✅ Auto-sync functionality\n\n## Next Steps:\n1. Add debugging features\n2. Integrate tree-sitter for code analysis\n3. Add live collaboration features\n\nLet's see if this syncs! 🚀",
+    "createdAt": 1731730000000,
+    "updatedAt": 1731730000000
+  }
+]
