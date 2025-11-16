@@ -36,6 +36,14 @@ const btnCode = document.getElementById('btnCode')
 const btnList = document.getElementById('btnList')
 const autoSyncToggle = document.getElementById('autoSyncToggle')
 const syncStatus = document.getElementById('syncStatus')
+// Task panel elements
+const btnRefreshTasks = document.getElementById('btnRefreshTasks')
+const inboxCount = document.getElementById('inboxCount')
+const outboxCount = document.getElementById('outboxCount')
+const completedCount = document.getElementById('completedCount')
+const inboxList = document.getElementById('inboxList')
+const outboxList = document.getElementById('outboxList')
+const completedList = document.getElementById('completedList')
 
 function load() {
   try {
@@ -486,11 +494,95 @@ document.addEventListener('keydown', (e)=>{
   }
 })
 
+// Task Panel Functions
+async function loadTasks() {
+  try {
+    const resp = await fetch('./tasks.json')
+    if (!resp.ok) throw new Error('Failed to load tasks.json')
+    const tasks = await resp.json()
+    renderTasks(tasks)
+  } catch (err) {
+    console.error('Failed to load tasks:', err)
+    // Show empty state
+    inboxCount.textContent = '0'
+    outboxCount.textContent = '0'
+    completedCount.textContent = '0'
+    inboxList.innerHTML = '<div class="text-gray-400 italic">No tasks.json found</div>'
+  }
+}
+
+function renderTasks(tasks) {
+  // Update counts
+  inboxCount.textContent = tasks.inbox?.length || 0
+  outboxCount.textContent = tasks.outbox?.length || 0
+  completedCount.textContent = tasks.completed?.length || 0
+
+  // Render inbox
+  if (tasks.inbox && tasks.inbox.length > 0) {
+    inboxList.innerHTML = tasks.inbox.map(task => {
+      const priorityColor = {
+        high: 'text-red-600 dark:text-red-400',
+        medium: 'text-yellow-600 dark:text-yellow-400',
+        low: 'text-green-600 dark:text-green-400'
+      }[task.data.priority] || 'text-gray-600'
+
+      return `
+        <div class="p-2 bg-white dark:bg-gray-800 rounded border dark:border-gray-600">
+          <div class="flex items-start gap-1">
+            <span class="${priorityColor} font-bold">[${task.data.priority?.toUpperCase() || 'MED'}]</span>
+            <div class="flex-1">
+              <div class="dark:text-white">${task.data.desc || 'No description'}</div>
+              <div class="text-gray-500 text-xs mt-1">
+                ID: ${task.id} | ${task.data.action || 'task'}
+              </div>
+            </div>
+          </div>
+        </div>
+      `
+    }).join('')
+  } else {
+    inboxList.innerHTML = '<div class="text-gray-400 italic">No pending tasks</div>'
+  }
+
+  // Render outbox (last 5 messages)
+  if (tasks.outbox && tasks.outbox.length > 0) {
+    const recentOutbox = tasks.outbox.slice(-5)
+    outboxList.innerHTML = recentOutbox.map(msg => {
+      const time = new Date(msg.ts).toLocaleTimeString()
+      const message = msg.data?.msg || JSON.stringify(msg.data)
+      return `
+        <div class="p-1 bg-white dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300">
+          <span class="text-gray-500">[${time}]</span> ${msg.from}: ${message}
+        </div>
+      `
+    }).join('')
+  } else {
+    outboxList.innerHTML = '<div class="text-gray-400 italic">No messages sent</div>'
+  }
+
+  // Render completed (last 5)
+  if (tasks.completed && tasks.completed.length > 0) {
+    const recentCompleted = tasks.completed.slice(-5)
+    completedList.innerHTML = recentCompleted.map(task => {
+      return `
+        <div class="p-1 bg-white dark:bg-gray-800 rounded text-gray-700 dark:text-gray-300">
+          ✓ ${task.data?.desc || task.id}
+        </div>
+      `
+    }).join('')
+  } else {
+    completedList.innerHTML = '<div class="text-gray-400 italic">No completed tasks</div>'
+  }
+}
+
+btnRefreshTasks.addEventListener('click', loadTasks)
+
 // init
 load()
 loadDarkMode()
 loadAutoSyncPreference()
 renderList()
+loadTasks() // Load task panel
 // auto-load most recent entry if present
 if (entries.length) {
   entries.sort((a,b)=> b.updatedAt - a.updatedAt)

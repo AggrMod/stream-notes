@@ -38,6 +38,27 @@
       <div class="mb-4">
         <input id="search" type="search" placeholder="Search... (Ctrl+F)" class="w-full px-3 py-2 border dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
       </div>
+
+      <!-- Task Queue Panel -->
+      <div id="taskPanel" class="mb-4 border dark:border-gray-700 rounded p-3 bg-gray-50 dark:bg-gray-750">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold dark:text-white">📋 Collaboration Tasks</h3>
+          <button id="btnRefreshTasks" class="text-xs px-2 py-1 bg-gray-600 text-white rounded" title="Refresh tasks">🔄</button>
+        </div>
+        <div id="taskInbox" class="text-xs mb-2">
+          <div class="font-semibold mb-1 text-gray-700 dark:text-gray-300">📥 Inbox (<span id="inboxCount">0</span>)</div>
+          <div id="inboxList" class="space-y-1 max-h-32 overflow-auto"></div>
+        </div>
+        <div id="taskOutbox" class="text-xs mb-2">
+          <div class="font-semibold mb-1 text-gray-700 dark:text-gray-300">📤 Outbox (<span id="outboxCount">0</span>)</div>
+          <div id="outboxList" class="space-y-1 max-h-24 overflow-auto"></div>
+        </div>
+        <div id="taskCompleted" class="text-xs">
+          <div class="font-semibold mb-1 text-gray-700 dark:text-gray-300">✅ Completed (<span id="completedCount">0</span>)</div>
+          <div id="completedList" class="space-y-1 max-h-24 overflow-auto"></div>
+        </div>
+      </div>
+
       <div class="flex-1 overflow-auto" id="entriesList"></div>
       <div class="mt-4">
         <button id="btnNew" class="w-full px-3 py-2 bg-indigo-600 text-white rounded">+ New Entry</button>

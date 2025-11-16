@@ -5,6 +5,8 @@ const cors = require('cors')
 const app = express()
 app.use(cors())
 app.use(express.json({limit: '1mb'}))
+// Serve static files (index.html, app.js, tasks.json, etc.)
+app.use(express.static(__dirname))
 
 let store = [] // in-memory store for demo
 
