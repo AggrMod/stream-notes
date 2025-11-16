@@ -28,6 +28,13 @@
         <button id="btnSync" class="px-2 py-1 bg-teal-600 text-white rounded text-xs">Sync →</button>
         <button id="btnPull" class="px-2 py-1 bg-gray-600 text-white rounded text-xs">← Pull</button>
       </div>
+      <div class="mb-2 flex items-center gap-2">
+        <label class="flex items-center gap-1 text-xs dark:text-gray-300">
+          <input type="checkbox" id="autoSyncToggle" class="rounded" />
+          Auto-sync (30s)
+        </label>
+      </div>
+      <div id="syncStatus" class="text-xs text-gray-500 dark:text-gray-400 mb-2 hidden"></div>
       <div class="mb-4">
         <input id="search" type="search" placeholder="Search... (Ctrl+F)" class="w-full px-3 py-2 border dark:border-gray-600 rounded dark:bg-gray-700 dark:text-white" />
       </div>

@@ -1,10 +1,12 @@
 // Minimal journal MVP using localStorage
 const STORAGE_KEY = 'journal_entries_v1'
 const DARK_MODE_KEY = 'journal_dark_mode'
+const AUTO_SYNC_KEY = 'journal_auto_sync'
 let entries = []
 let currentId = null
 let autoSaveTimeout = null
 let hasUnsavedChanges = false
+let autoSyncInterval = null
 
 // DOM
 const entriesList = document.getElementById('entriesList')
@@ -32,6 +34,8 @@ const btnHeading = document.getElementById('btnHeading')
 const btnLink = document.getElementById('btnLink')
 const btnCode = document.getElementById('btnCode')
 const btnList = document.getElementById('btnList')
+const autoSyncToggle = document.getElementById('autoSyncToggle')
+const syncStatus = document.getElementById('syncStatus')
 
 function load() {
   try {
@@ -324,6 +328,104 @@ async function pullFromServer(){
 btnSync.addEventListener('click', ()=> syncToServer())
 btnPull.addEventListener('click', ()=> pullFromServer())
 
+// Auto-sync functionality
+function updateSyncStatus(message, isError = false) {
+  syncStatus.textContent = message
+  syncStatus.classList.remove('hidden')
+  syncStatus.classList.toggle('text-red-500', isError)
+  syncStatus.classList.toggle('text-gray-500', !isError)
+  syncStatus.classList.toggle('dark:text-red-400', isError)
+  syncStatus.classList.toggle('dark:text-gray-400', !isError)
+}
+
+async function autoSync() {
+  try {
+    updateSyncStatus('🔄 Syncing...')
+
+    // First pull to get latest changes
+    const pullResp = await fetch('http://localhost:4000/entries')
+    if (pullResp.ok) {
+      const serverEntries = await pullResp.json()
+      if (Array.isArray(serverEntries)) {
+        // Merge: keep newest updatedAt
+        const map = new Map(entries.map(e=>[e.id,e]))
+        for (const s of serverEntries){
+          const existing = map.get(s.id)
+          if (!existing) map.set(s.id,s)
+          else if ((s.updatedAt||0) > (existing.updatedAt||0)) map.set(s.id,s)
+        }
+        entries = Array.from(map.values())
+        saveAll()
+        renderList(search.value)
+      }
+    }
+
+    // Then push our changes
+    const pushResp = await fetch('http://localhost:4000/entries', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(entries)
+    })
+
+    if (pushResp.ok) {
+      const now = new Date().toLocaleTimeString()
+      updateSyncStatus(`✓ Synced at ${now}`)
+      setTimeout(() => {
+        if (syncStatus.textContent.includes(now)) {
+          syncStatus.classList.add('hidden')
+        }
+      }, 5000)
+    } else {
+      throw new Error('Push failed')
+    }
+  } catch(err) {
+    console.error('Auto-sync failed', err)
+    updateSyncStatus('⚠ Sync failed (server offline?)', true)
+    setTimeout(() => syncStatus.classList.add('hidden'), 5000)
+  }
+}
+
+function startAutoSync() {
+  if (autoSyncInterval) return
+  autoSyncInterval = setInterval(() => {
+    if (autoSyncToggle.checked) {
+      autoSync()
+    }
+  }, 30000) // 30 seconds
+
+  // Initial sync
+  if (autoSyncToggle.checked) {
+    autoSync()
+  }
+}
+
+function stopAutoSync() {
+  if (autoSyncInterval) {
+    clearInterval(autoSyncInterval)
+    autoSyncInterval = null
+  }
+}
+
+autoSyncToggle.addEventListener('change', (e) => {
+  localStorage.setItem(AUTO_SYNC_KEY, e.target.checked ? 'true' : 'false')
+  if (e.target.checked) {
+    updateSyncStatus('Auto-sync enabled')
+    setTimeout(() => syncStatus.classList.add('hidden'), 2000)
+    autoSync() // Immediate sync when enabled
+  } else {
+    updateSyncStatus('Auto-sync disabled')
+    setTimeout(() => syncStatus.classList.add('hidden'), 2000)
+  }
+})
+
+function loadAutoSyncPreference() {
+  const isEnabled = localStorage.getItem(AUTO_SYNC_KEY) === 'true'
+  autoSyncToggle.checked = isEnabled
+  if (isEnabled) {
+    startAutoSync()
+  }
+}
+
 // Dark mode
 btnDarkMode.addEventListener('click', ()=> toggleDarkMode())
 
@@ -387,6 +489,7 @@ document.addEventListener('keydown', (e)=>{
 // init
 load()
 loadDarkMode()
+loadAutoSyncPreference()
 renderList()
 // auto-load most recent entry if present
 if (entries.length) {
