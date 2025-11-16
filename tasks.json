@@ -1,5 +1,17 @@
 {
-  "inbox": [],
+  "inbox": [
+    {
+      "from": "local",
+      "ts": 1763273417828,
+      "type": "task",
+      "id": "t_1763273417828",
+      "data": {
+        "action": "create_docs",
+        "desc": "Document the collaboration workflow with examples",
+        "priority": "medium"
+      }
+    }
+  ],
   "outbox": [
     {
       "from": "local",
