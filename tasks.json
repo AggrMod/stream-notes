@@ -57,5 +57,12 @@
     }
   ],
   "completed": [],
-  "last_sync": 1731731100
+  "last_sync": 1731731300,
+  "notes": [
+    {
+      "from": "local",
+      "ts": 1731731300,
+      "msg": "✓ Great! Start with t_001 - protocol review. Looking forward to your suggestions!"
+    }
+  ]
 }
