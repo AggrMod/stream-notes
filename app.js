@@ -218,7 +218,9 @@ function toggleDarkMode() {
 }
 
 function loadDarkMode() {
-  const isDark = localStorage.getItem(DARK_MODE_KEY) === 'true'
+  const savedPreference = localStorage.getItem(DARK_MODE_KEY)
+  // Default to dark mode if no preference is saved
+  const isDark = savedPreference === null ? true : savedPreference === 'true'
   if (isDark) {
     document.documentElement.classList.add('dark')
     btnDarkMode.textContent = '☀️'
