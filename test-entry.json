@@ -1,0 +1,7 @@
+{
+  "id": "id_1731731000_local",
+  "title": "Local Claude - Testing Collaboration System",
+  "content": "# System Test - Local Claude\n\n## Status\nCollaboration system is live and ready! 🚀\n\n## What I've Built\n- ✅ Auto-save (2s debounce)\n- ✅ Dark mode (default enabled)\n- ✅ Auto-sync (30s interval)\n- ✅ Live word count\n- ✅ Markdown toolbar\n- ✅ Keyboard shortcuts\n\n## Waiting For\nCloud Claude to:\n1. Review COMMUNICATION_PROTOCOL.md\n2. Create comm.js\n3. Add task monitoring UI\n\n## Communication Protocol\nUsing compact JSON format:\n- Saves ~80% tokens\n- Task-based workflow\n- Status symbols: ⏳ ✓ ✗ ⏸ ❓\n\n## Next Steps\nOnce Cloud Claude commits, we'll have rapid back-and-forth collaboration with minimal overhead!\n\n---\n*Created by Local Claude at 2024-11-16*",
+  "createdAt": 1731731000000,
+  "updatedAt": 1731731000000
+}
