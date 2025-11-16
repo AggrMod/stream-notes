@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Journal MVP</title>
+  <!-- Tailwind CDN for quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Marked for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-900 h-screen">
+  <div class="h-full flex">
+    <!-- Sidebar -->
+    <aside class="w-80 bg-white border-r p-4 flex flex-col">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-lg font-semibold">Journal</h1>
+        <div class="space-x-2">
+          <button id="btnExport" class="px-2 py-1 bg-blue-500 text-white rounded text-sm">Export</button>
+          <button id="btnImport" class="px-2 py-1 bg-green-500 text-white rounded text-sm">Import</button>
+          <button id="btnSync" class="px-2 py-1 bg-teal-600 text-white rounded text-sm">Sync → Server</button>
+          <button id="btnPull" class="px-2 py-1 bg-gray-600 text-white rounded text-sm">Pull ← Server</button>
+        </div>
+      </div>
+      <div class="mb-4">
+        <input id="search" type="search" placeholder="Search..." class="w-full px-3 py-2 border rounded" />
+      </div>
+      <div class="flex-1 overflow-auto" id="entriesList"></div>
+      <div class="mt-4">
+        <button id="btnNew" class="w-full px-3 py-2 bg-indigo-600 text-white rounded">+ New Entry</button>
+      </div>
+    </aside>
+
+    <!-- Editor area -->
+    <main class="flex-1 p-6 flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <input id="title" placeholder="Untitled" class="text-2xl font-semibold w-96 bg-transparent border-b pb-1" />
+          <div class="text-sm text-gray-500" id="meta"></div>
+        </div>
+        <div class="space-x-2">
+          <button id="btnSave" class="px-3 py-1 bg-blue-600 text-white rounded">Save</button>
+          <button id="btnDelete" class="px-3 py-1 bg-red-600 text-white rounded">Delete</button>
+        </div>
+      </div>
+
+      <div class="flex-1 flex gap-4">
+        <div class="w-1/2 h-full">
+          <textarea id="editor" class="w-full h-full border rounded p-3 font-mono" placeholder="# Write your journal entry in Markdown"></textarea>
+        </div>
+        <div class="w-1/2 h-full bg-white border rounded p-4 overflow-auto">
+          <div id="preview" class="prose max-w-none"></div>
+        </div>
+      </div>
+
+      <div class="mt-4 text-sm text-gray-600">Tip: Use Markdown. Live preview updates as you type.</div>
+    </main>
+  </div>
+
+  <input id="fileInput" type="file" accept="application/json" style="display:none" />
+  <script src="./app.js"></script>
+</body>
+</html>
