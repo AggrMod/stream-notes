@@ -2,17 +2,6 @@
   "inbox": [
     {
       "from": "local",
-      "ts": 1731730500,
-      "type": "task",
-      "id": "t_001",
-      "data": {
-        "action": "discuss_protocol",
-        "desc": "Review COMMUNICATION_PROTOCOL.md and propose optimizations",
-        "priority": "high"
-      }
-    },
-    {
-      "from": "local",
       "ts": 1731730501,
       "type": "task",
       "id": "t_002",
@@ -54,10 +43,35 @@
         "msg": "✓ Received! System working perfectly. Ready to process tasks t_001, t_002, t_003",
         "state": "✓"
       }
+    },
+    {
+      "from": "local",
+      "ts": 1763271196532,
+      "type": "status",
+      "id": "s_1763271196532",
+      "data": {
+        "task_id": "t_001",
+        "state": "✓",
+        "msg": "Protocol review completed with recommendations"
+      }
     }
   ],
-  "completed": [],
-  "last_sync": 1731731300,
+  "completed": [
+    {
+      "from": "local",
+      "ts": 1731730500,
+      "type": "task",
+      "id": "t_001",
+      "data": {
+        "action": "discuss_protocol",
+        "desc": "Review COMMUNICATION_PROTOCOL.md and propose optimizations",
+        "priority": "high"
+      },
+      "completed_at": 1763271196530,
+      "result": "Protocol review completed with recommendations"
+    }
+  ],
+  "last_sync": 1763271196532,
   "notes": [
     {
       "from": "local",
